@@ -1,0 +1,17 @@
+{
+    "path":"resource/img/hero.png",
+    "sprites":[
+        {
+            "name":"hero_01",
+            "background":[150,480],
+            "time":0.1,
+            "is_reverse":false,
+            "postion":[
+                {
+                    "start":[172,80],
+                    "end":[376,284]
+                }
+            ]
+        }
+    ]
+}

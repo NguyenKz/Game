@@ -1,0 +1,30 @@
+{
+    "path":"resource/img/bullet.png",
+    
+    "sprites":[
+        {
+            "name":"bullet_01",
+            "time":0.1,
+            "is_reverse":true,
+            "background":[0,0],
+            "postion":[
+                {
+                    "start":[5,296],
+                    "end":[45,336]
+                },{
+                    "start":[53,296],
+                    "end":[93,336]
+                },{
+                    "start":[101,296],
+                    "end":[141,336]
+                },{
+                    "start":[149,296],
+                    "end":[189,336]
+                },{
+                    "start":[197,296],
+                    "end":[237,336]
+                }
+            ]
+        }
+    ]
+}
