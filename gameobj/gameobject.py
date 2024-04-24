@@ -1,12 +1,25 @@
 import math
+import random
 import time
 import pygame
 from resource.resource import *
 from gameobj.sprite import Sprite
 from gameobj.screen import SCREEM
 class BaseGameObject:
-        
-    def __init__(self,width:int,height:int,x:int,y:int) -> None:
+    def __init__(self,width:int,
+                 height:int,
+                 x:int,
+                 y:int,
+                 x_taget:int = 0,
+                 y_taget:int = 0,
+                 dame:float = 0,
+                 speed:float = 0,
+                 max_HP:int = 0,
+                 fire_rate: float = 0,
+                 critical_chance:float = 0,
+                 critical_dame:float = 0,
+                 armor:float = 0
+        ) -> None:
         self.width = width
         self.height = height
         self.x = x
@@ -16,6 +29,26 @@ class BaseGameObject:
         self.last_time = 0
         self.time_diff = 0
         self.animation_angle = 0
+        self.x_taget = x_taget
+        self.y_taget = y_taget
+        self.dame = dame
+        self.max_HP = max_HP
+        self.hp = max_HP
+        self.speed = speed
+        self.fire_rate = fire_rate
+        self.critical_chance = critical_chance
+        self.critical_dame = critical_dame
+        self.armor = armor
+        self.effects = []
+        self._is_destroyed = False
+        self.load_sprite()  
+
+
+    def get_dame(self)->float:
+        return self.dame
+    
+    def attacked(self,dame:float):
+        self.hp-=dame+self.armor
 
     @property    
     def is_destroyed(self)->bool:
@@ -23,35 +56,25 @@ class BaseGameObject:
     
     @staticmethod
     def collision(object_1,object_2)->bool:
-        retVal = BaseGameObject.__collision(point=[object_1.x,object_1.y],object_other=object_2)
-        if retVal:
-            return True
-        retVal = BaseGameObject.__collision(point=[object_1.x+object_1.width,object_1.y],object_other=object_2)
-        if retVal:
-            return True
-        retVal = BaseGameObject.__collision(point=[object_1.x+object_1.width,object_1.y+object_1.height],object_other=object_2)
-        if retVal:
-            return True
-        retVal = BaseGameObject.__collision(point=[object_1.x,object_1.y+object_1.height],object_other=object_2)
-        if retVal:
-            return True
-        return False
-    
-    @staticmethod
-    def __collision(point,object_other)->bool:
-        x = point[0]
-        y = point[1]
-        return not (x<=object_other.x or x>=object_other.x+object_other.width or y<=object_other.y or y>=object_other.y+object_other.height)
+        rect1 = [object_1.x,object_1.y,object_1.x+object_1.width,object_1.y+object_1.height]
+        rect2 = [object_2.x,object_2.y,object_2.x+object_2.width,object_2.y+object_2.height]
+        if rect1[0] > rect2[2] or rect2[0] > rect1[2]:
+            return False
+
+        if rect1[1] > rect2[3] or rect2[1] > rect1[3]:
+            return False
+
+        return True
+            
+   
     def load_sprite(self):
         raise Exception("Impletment _load_sprite function")
     
     def all_obj(self,contex:dict):
-        objs = contex["all_objs"]
-        keys = list(objs.keys())
-        keys.sort(reverse=True)
-        for key in keys:
-            for obj in objs[key]:
-                yield obj
+        for key in contex["all_objs"]:
+            for obj in contex["all_objs"][key]:
+                if math.sqrt((self.x-obj.x)**2 +(self.y-obj.y)**2)<200:
+                    yield obj
 
     def update(self,contex:dict):
         if self.last_time<=0:
@@ -69,20 +92,41 @@ class BaseGameObject:
         if animation is None:
             return
         animation.render(screen=screen,x = self.x,y=self.y,width=self.width,height=self.height,d=self.animation_angle)    
+        font = pygame.font.Font('freesansbold.ttf', 20)
+        green = (0, 255, 0)
+        text = font.render(f'HP: {self.hp}', True, green, None)
+        textRect = text.get_rect()
+        textRect.center = (self.x, self.y )
+        screen.blit(text, textRect)
+        pygame.draw.rect(surface=screen,color=green,rect=[self.x,self.y,self.width,self.height],width=1)
+
+class Effect:
+    def __init__(self,producer:BaseGameObject) -> None:
+        self.producer:BaseGameObject = producer
+
+    def do_effect(self,taget:BaseGameObject):
+        raise Exception("Implement do_effect")
+
+class BaseDameEffect(Effect):
+    def do_effect(self,taget:BaseGameObject):
+        dame = self.producer.get_dame()
+        taget.attacked(dame=dame)
+
+class DestroyedBulletEffect(Effect):
+    def do_effect(self, taget: BaseGameObject):
+        self.producer._is_destroyed = True
 
 class Bullet(BaseGameObject):
+    
+    def __init__(self,producer:BaseGameObject,*args,**kwargs) -> None:
+        super().__init__(*args,**kwargs)
 
-    def __init__(self, width: int, height: int, x: int, y: int,x_taget:int,y_taget:int,dame:float,speed:float) -> None:
-        super().__init__(width, height, x, y)
-        self.x_taget = x_taget
-        self.y_taget = y_taget
-        self.dame = dame
-        self.speed = speed
-        self.load_sprite()  
         self.is_stoped = False
-        self.vector_AB = (x_taget-x, y_taget-y)
+        self.vector_AB = (self.x_taget-self.x, self.y_taget-self.y)
         self.length_AB = math.sqrt(self.vector_AB[0] ** 2 + self.vector_AB[1] ** 2)
-        self._is_destroyed = False
+        self.producer = producer
+        self.effects:list[Effect] = [BaseDameEffect(producer=self), DestroyedBulletEffect(producer=self)]
+        self.cache_obj:list[BaseGameObject] = []
 
     def load_sprite(self):
         file_name = FILE_BULLET
@@ -97,10 +141,25 @@ class Bullet(BaseGameObject):
     def _update(self,contex:dict):
         if self.is_stoped:
             return
+        
+        for obj in self.all_obj(contex=contex):
+            obj:BaseGameObject = obj
+            if obj == self.producer or obj == self:
+                continue
+            if BaseGameObject.collision(object_1=obj,object_2=self):
+                if obj not in self.cache_obj:
+                    self.cache_obj.append(obj)
+                    for effect in self.effects:
+                        effect.do_effect(taget=obj)
+            elif obj in self.cache_obj:
+                self.cache_obj.remove(obj)
+                
+
         s = self.speed*self.time_diff
         k = s/self.length_AB
         self.x = self.x+self.vector_AB[0]*k
         self.y = self.y+self.vector_AB[1]*k
+
 
 
     @property    
@@ -113,14 +172,6 @@ class Bullet(BaseGameObject):
     
 class CharBase(BaseGameObject):
 
-    def __init__(self, width: int, height: int, x: int, y: int,max_HP,dame:int,fire_rate:float) -> None:
-        super().__init__(width, height, x, y)
-        self.max_HP = max_HP
-        self.current_HP = max_HP
-        self.dame = dame
-        self.fire_rate = fire_rate
-        self.effects = []
-
     def find_angle(self,taget:list[int]):
         p1 = [self.x,0]
         p2 = [self.x,self.y]
@@ -132,17 +183,13 @@ class CharBase(BaseGameObject):
 
         return angle_deg
     
-    def do_effect(self,other):
-        pass
+    @property
+    def is_destroyed(self):
+        if self.hp<=0:
+            return True
+        self._is_destroyed = True
 
-    def attacked(self,attacker):
-        for effect in attacker.effects:
-            effect.do_effect(self)
-    
 class Char001(CharBase):
-
-    def __init__(self, width: int, height: int, x: int, y: int, max_HP, dame: int, fire_rate: float) -> None:
-        super().__init__(width, height, x, y, max_HP, dame, fire_rate)
 
     def load_sprite(self):
         file_name = FILE_HERO
@@ -162,9 +209,6 @@ class Char001(CharBase):
                 break
     
 
-    @property    
-    def is_destroyed(self)->bool:
-        return False
 
 
 class Mob001(CharBase):
@@ -212,7 +256,5 @@ class Mob001(CharBase):
         de = self.find_angle(taget=[my_char.x,my_char.y])
         self.animation_angle=180+de
 
-    @property    
-    def is_destroyed(self)->bool:
-        return False
+
 
