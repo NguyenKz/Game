@@ -55,7 +55,7 @@ while running:
         all_objs["layer_002"].append(bullet)
         last_time2 = time.time()
     if time.time()-last_time>=2:
-        mob = Mob001(40,40,x=random.randint(50,screen.get_width()-100),y=random.randint(50,screen.get_height()-100),max_HP=100,dame=100,fire_rate=1)
+        mob = Mob001(40,40,x=random.randint(50,screen.get_width()-100),y=random.randint(50,screen.get_height()-100),speed = 100,max_HP=100,dame=100,fire_rate=1)
         mob.load_sprite()
         all_objs["layer_001"].append(mob)
         last_time = time.time()

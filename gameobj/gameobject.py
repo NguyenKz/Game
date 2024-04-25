@@ -207,6 +207,13 @@ class Char001(CharBase):
 
 class Mob001(CharBase):
 
+    def __init__(self, *args,**kwargs) -> None:
+        super().__init__(*args,**kwargs)
+        self.is_stoped = False
+        self.x_taget = SCREEM.get_width()//2
+        self.y_taget = SCREEM.get_height()//2
+        self.vector_AB = (self.x_taget-self.x, self.y_taget-self.y)
+        self.length_AB = math.sqrt(self.vector_AB[0] ** 2 + self.vector_AB[1] ** 2)
 
     def load_sprite(self):
         state = "LEFT"
@@ -230,13 +237,24 @@ class Mob001(CharBase):
         self.state = state
 
     def _update(self, contex:dict):
-        my_char:Char001 = None
-        for obj in self.all_obj(contex=contex):
-            if isinstance(obj,Char001):
-                my_char = obj
-                break
-        if not my_char:
-            return
+
+        s = self.speed*self.time_diff
+        k = s/self.length_AB
+        new_x = self.vector_AB[0]*k
+        new_y = self.vector_AB[1]*k
+        if abs(new_x)>abs(new_y):
+            if self.x>self.x_taget:
+                self.state = "LEFT"
+            else:
+                self.state = "RIGHT"
+        else:
+            if self.y<self.y_taget:
+                self.state = "DOWN"
+            else:
+                self.state = "UP"
+
+        self.x += new_x
+        self.y += new_y
 
 
 
