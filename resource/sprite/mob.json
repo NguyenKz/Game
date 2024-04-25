@@ -6,7 +6,7 @@
             "background":[0,0],
             "time":0.5,
             "is_reverse":true,
-            "postion":[
+            "position":[
                 {
                     "start":[2,0],
                     "end":[28,32]
@@ -24,7 +24,7 @@
             "background":[0,0],
             "time":0.5,
             "is_reverse":true,
-            "postion":[
+            "position":[
                 {
                     "start":[2,32],
                     "end":[28,64]
@@ -42,7 +42,7 @@
             "background":[0,0],
             "time":0.5,
             "is_reverse":true,
-            "postion":[
+            "position":[
                 {
                     "start":[2,64],
                     "end":[28,96]
@@ -60,7 +60,7 @@
             "background":[0,0],
             "time":0.5,
             "is_reverse":true,
-            "postion":[
+            "position":[
                 {
                     "start":[2,96],
                     "end":[28,128]

@@ -6,7 +6,7 @@
             "background":[150,480],
             "time":0.1,
             "is_reverse":false,
-            "postion":[
+            "position":[
                 {
                     "start":[172,80],
                     "end":[376,284]

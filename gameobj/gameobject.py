@@ -129,11 +129,8 @@ class Bullet(BaseGameObject):
         self.cache_obj:list[BaseGameObject] = []
 
     def load_sprite(self):
-        file_name = FILE_BULLET
-        name = NAME_BULLET_BULLET_01
         state = "normal"
-        sprite = Sprite()
-        sprite.load(path=file_name,name=name)
+        sprite = Sprite(RES_BULLET.sprite_bullet_01)
         self.animations[state] = sprite
         self.state = state
 
@@ -192,11 +189,8 @@ class CharBase(BaseGameObject):
 class Char001(CharBase):
 
     def load_sprite(self):
-        file_name = FILE_HERO
-        name = NAME_HERO_HERO_001
         state = "normal"
-        sprite = Sprite()
-        sprite.load(path=file_name,name=name)
+        sprite = Sprite(RES_HERO.sprite_hero_01)
         self.animations[state] = sprite
         self.state = state
 
@@ -215,33 +209,23 @@ class Mob001(CharBase):
 
 
     def load_sprite(self):
-        file_name = FILE_MOB
-
-        name = NAME_MOB_MOB_01_LEFT
         state = "LEFT"
-        sprite = Sprite()
-        sprite.load(path=file_name,name=name)
+        sprite = Sprite(RES_MOB.sprite_mob_01_left)
         self.animations[state] = sprite
         self.state = state
 
-        name = NAME_MOB_MOB_01_RIGHT
         state = "RIGHT"
-        sprite = Sprite()
-        sprite.load(path=file_name,name=name)
+        sprite = Sprite(RES_MOB.sprite_mob_01_right)
         self.animations[state] = sprite
         self.state = state
 
-        name = NAME_MOB_MOB_01_UP
         state = "UP"
-        sprite = Sprite()
-        sprite.load(path=file_name,name=name)
+        sprite = Sprite(RES_MOB.sprite_mob_01_up)
         self.animations[state] = sprite
         self.state = state
 
-        name = NAME_MOB_MOB_01_DOWN
         state = "DOWN"
-        sprite = Sprite()
-        sprite.load(path=file_name,name=name)
+        sprite = Sprite(RES_MOB.sprite_mob_01_down)
         self.animations[state] = sprite
         self.state = state
 
@@ -253,8 +237,6 @@ class Mob001(CharBase):
                 break
         if not my_char:
             return
-        de = self.find_angle(taget=[my_char.x,my_char.y])
-        self.animation_angle=180+de
 
 
 

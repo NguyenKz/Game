@@ -1,76 +1,13 @@
-import json
 import pygame
 import time
-
-class SpriteImage:
-    IMAGE_CACHE = {}
-    def __init__(self) -> None:
-        self.images = None
-        self.time_frame = None
-        self.is_reverse = None
-    @staticmethod
-    def factory(path:str,name:str):
-        if SpriteImage.IMAGE_CACHE.get(f"{path}__{name}"):
-            return SpriteImage.IMAGE_CACHE.get(f"{path}__{name}")
-        sprite_img = SpriteImage()
-        sprite_img.load(path,name)
-        SpriteImage.IMAGE_CACHE[f"{path}__{name}"]=sprite_img
-        return sprite_img
-    
-    def load(self,path:str,name:str):
-        """Load sprite file
-
-        Args:
-            path (str): path of sprite file (json)
-            name (str): name of sprite
-
-        Raises:
-            Exception: _description_
-        """
-        print(path,name)
-        self.path = f"resource/sprite/{path}"
-        with open(self.path,"r") as file:
-            data = json.loads(file.read())
-            sprite = None
-            for item in data["sprites"]:
-                if name == item["name"]:
-                    sprite = item
-                    break
-            if sprite is None:
-                raise Exception(f"Load sprite error: name [{name}] not found.")
-            self.images:list[pygame.Surface] = []
-            self.time = int(sprite["time"]*1000)
-            self.is_reverse=sprite["is_reverse"]
-            image = pygame.image.load(data["path"])
-            for item in sprite["postion"]:
-                start = item["start"]
-                end = item["end"]
-                width, height = end[0]-start[0], end[1]-start[1]
-                x, y = start[0], start[1]
-                cropped_image = pygame.Surface((width, height))
-                cropped_image.blit(image, (0, 0), (x, y, width, height))
-                cropped_image.convert()
-                cropped_image.set_colorkey(image.get_at(sprite["background"]))
-                self.images.append(cropped_image)
-            self.time_frame = self.time//len(self.images)
-
+from resource.resource import SpriteImage
 class Sprite:
 
-    def __init__(self) -> None:
-        self.sprite_imgs = None
-    def load(self,path:str,name:str):
-        """Load sprite file
-
-        Args:
-            path (str): path of sprite file (json)
-            name (str): name of sprite
-
-        Raises:
-            Exception: _description_
-        """
-        self.sprite_imgs = SpriteImage.factory(path=path,name=name)
+    def __init__(self,sprite_images:SpriteImage) -> None:
+        self.sprite_imgs = sprite_images
         self.is_up = True
         self.start_time = 0
+        
 
     def render(self,screen:pygame.Surface,x:int,y:int,width:int,height:int,d:float=0):
         x = int(x)
@@ -101,4 +38,3 @@ class Sprite:
         new_rect.x=x
         new_rect.y=y
         screen.blit(img, new_rect)
-        # pygame.draw.rect(screen,(0, 0, 255),new_rect,1)

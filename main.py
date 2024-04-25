@@ -78,7 +78,7 @@ while running:
         all_objs[key].remove(obj)
         del obj
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(60)
     fps+=1
     if time.time()-last>=3:
         print(f"FPS: {fps//3}")
