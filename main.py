@@ -1,6 +1,6 @@
 import random
 import time
-from gameobj import Bullet,Mob001,Char001, SCREEM,CLOCK
+from gameobj import Bullet,Mob001,Char001, SCREEM,CLOCK,CharEmpty,SCREEM_WIDTH,SCREEM_HEIGHT
 import pygame
 
 screen = SCREEM
@@ -12,10 +12,12 @@ all_objs:dict = {
     "layer_002" : [],
 }
 
-my_char = Char001(40,40,screen.get_width()//2-20,screen.get_height()//2-20,max_HP=100,dame=100,fire_rate=1)
+my_char = Char001(40,40,SCREEM_WIDTH//2-20,SCREEM_HEIGHT//2-20,max_HP=100,dame=100,fire_rate=1)
 my_char.load_sprite()
 all_objs["layer_001"].append(my_char)
-
+char_empty = CharEmpty(80,80,SCREEM_WIDTH//2-40,SCREEM_HEIGHT//2-40,max_HP=1,dame=0,fire_rate=0)
+char_empty.load_sprite()
+all_objs["layer_001"].append(char_empty)
 
 last_time = 0
 last_time2 = 0
@@ -26,7 +28,8 @@ fps = 0
 while running:
     contex = {
         
-        "events":[]
+        "events":[],
+        "my_char":my_char
     }
     for event in pygame.event.get():
         contex["events"].append(event)
@@ -36,26 +39,26 @@ while running:
             if event.button == 1:
                 bullet = Bullet(
                     width = 30,height = 30,
-                    x = screen.get_width()//2-5,y = screen.get_height()//2-5,
+                    x = SCREEM_WIDTH//2-5,y = SCREEM_HEIGHT//2-5,
                     x_taget = event.pos[0],y_taget = event.pos[1],
-                    dame = 10,speed = 500,
+                    dame = 10,speed = 300,
                     producer=my_char
                 )
                 all_objs["layer_002"].append(bullet)
         elif event.type == pygame.MOUSEMOTION:
             mouse = event.pos
-    if time.time()-last_time2>=0.2:
+    if time.time()-last_time2>=0.5:
         bullet = Bullet(
-            width = 30,height = 30,
-            x = screen.get_width()//2-5,y = screen.get_height()//2-5,
+            width = 100,height = 100,
+            x = SCREEM_WIDTH//2-5,y = SCREEM_HEIGHT//2-5,
             x_taget = mouse[0],y_taget = mouse[1],
-            dame = 70,speed = 500,
+            dame = 70,speed = 300,
             producer=my_char
         )
         all_objs["layer_002"].append(bullet)
         last_time2 = time.time()
-    if time.time()-last_time>=2:
-        mob = Mob001(40,40,x=random.randint(50,screen.get_width()-100),y=random.randint(50,screen.get_height()-100),speed = 100,max_HP=100,dame=100,fire_rate=1)
+    if time.time()-last_time>=0.5:
+        mob = Mob001(40,40,x=random.randint(50,SCREEM_WIDTH-100),y=random.randint(50,SCREEM_HEIGHT-100),speed = 100,max_HP=100,dame=100,fire_rate=1)
         mob.load_sprite()
         all_objs["layer_001"].append(mob)
         last_time = time.time()
@@ -73,7 +76,6 @@ while running:
             obj.render(screen=screen)
             if obj.is_destroyed:
                 destroyed_list.append([key,obj])
-    
     for key,obj in destroyed_list:
         all_objs[key].remove(obj)
         del obj

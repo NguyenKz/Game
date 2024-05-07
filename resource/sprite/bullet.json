@@ -1,28 +1,180 @@
 {
-    "path":"resource/img/bullet.png",
-    
-    "sprites":[
+    "path": "resource/img/bullet.png",
+    "sprites": [
         {
-            "name":"bullet_01",
-            "time":0.1,
-            "is_reverse":true,
-            "background":[0,0],
-            "position":[
+            "name": "bullet_01",
+            "time": 0.1,
+            "is_reverse": true,
+            "background": [
+                0,
+                0
+            ],
+            "position": [
                 {
-                    "start":[5,296],
-                    "end":[45,336]
-                },{
-                    "start":[53,296],
-                    "end":[93,336]
-                },{
-                    "start":[101,296],
-                    "end":[141,336]
-                },{
-                    "start":[149,296],
-                    "end":[189,336]
-                },{
-                    "start":[197,296],
-                    "end":[237,336]
+                    "start": [
+                        5,
+                        296
+                    ],
+                    "end": [
+                        45,
+                        336
+                    ]
+                },
+                {
+                    "start": [
+                        53,
+                        296
+                    ],
+                    "end": [
+                        93,
+                        336
+                    ]
+                },
+                {
+                    "start": [
+                        101,
+                        296
+                    ],
+                    "end": [
+                        141,
+                        336
+                    ]
+                },
+                {
+                    "start": [
+                        149,
+                        296
+                    ],
+                    "end": [
+                        189,
+                        336
+                    ]
+                },
+                {
+                    "start": [
+                        197,
+                        296
+                    ],
+                    "end": [
+                        237,
+                        336
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "bullet_02_fire",
+            "time": 0.5,
+            "is_reverse": false,
+            "is_repeat":  false,
+            "angle":90,
+            "background": [
+                0,
+                0
+            ],
+            "position": [
+                {
+                    "start": [
+                        533,
+                        864
+                    ],
+                    "end": [
+                        578,
+                        912
+                    ]
+                },
+                {
+                    "start": [
+                        578,
+                        864
+                    ],
+                    "end": [
+                        623,
+                        912
+                    ]
+                },
+                {
+                    "start": [
+                        623,
+                        864
+                    ],
+                    "end": [
+                        672,
+                        912
+                    ]
+                },
+                {
+                    "start": [
+                        672,
+                        864
+                    ],
+                    "end": [
+                        719,
+                        912
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "bullet_02_fly",
+            "time": 1,
+            "is_reverse": true,
+            "background": [
+                0,
+                0
+            ],
+            "position": [
+                {
+                    "start": [
+                        671,
+                        864
+                    ],
+                    "end": [
+                        719,
+                        912
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "bullet_02_explode",
+            "time": 0.2,
+            "is_reverse": true,
+            "is_repeat":false,
+            "background": [
+                0,
+                0
+            ],
+            "position": [
+                {
+                    "start": [
+                        720,
+                        864
+                    ],
+                    "end": [
+                        767,
+                        912
+                    ]
+                },
+                {
+                    "start": [
+                        767,
+                        864
+                    ],
+                    "end": [
+                        816,
+                        912
+                    ]
+                },
+                {
+                    "start": [
+                        720,
+                        864
+                    ],
+                    "end": [
+                        767,
+                        912
+                    ]
                 }
             ]
         }

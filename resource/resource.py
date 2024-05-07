@@ -2,6 +2,7 @@
 import json
 import pygame
 from gameobj.screen import *
+from uuid import uuid4
 class SpriteImage:
     def __init__(self,file_name:str,name:str,background:list[int],time:float,is_reverse:bool,position:list[dict]):
         self.name = name
@@ -11,6 +12,8 @@ class SpriteImage:
         self.is_reverse = is_reverse
         self.position = position
         self.images = []
+        self.is_repeat = False
+        self.id = uuid4()
         self.__load()
     
     def __load(self):
@@ -28,6 +31,7 @@ class SpriteImage:
             self.images:list[pygame.Surface] = []
             self.time = int(sprite["time"]*1000)
             self.is_reverse=sprite["is_reverse"]
+            self.is_repeat = sprite.get("is_repeat",True)
             image = pygame.image.load(data["path"])
             for item in sprite["position"]:
                 start = item["start"]
@@ -36,6 +40,7 @@ class SpriteImage:
                 x, y = start[0], start[1]
                 cropped_image = pygame.Surface((width, height))
                 cropped_image.blit(image, (0, 0), (x, y, width, height))
+                cropped_image = pygame.transform.rotate(surface=cropped_image,angle=sprite.get('angle') or 0)
                 cropped_image.convert()
                 cropped_image.set_colorkey(image.get_at(sprite["background"]))
                 self.images.append(cropped_image)
@@ -54,6 +59,30 @@ class __BULLET:
                 time = 0.1,
                 is_reverse = True,
                 position = [{'start': [5, 296], 'end': [45, 336]}, {'start': [53, 296], 'end': [93, 336]}, {'start': [101, 296], 'end': [141, 336]}, {'start': [149, 296], 'end': [189, 336]}, {'start': [197, 296], 'end': [237, 336]}]
+            )
+        self.sprite_bullet_02_fire = SpriteImage(
+                file_name = "bullet.json",
+                name = "bullet_02_fire",
+                background=[0, 0], 
+                time = 0.7,
+                is_reverse = True,
+                position = [{'start': [533, 864], 'end': [578, 912]}, {'start': [578, 864], 'end': [623, 912]}, {'start': [623, 864], 'end': [672, 912]}, {'start': [672, 864], 'end': [719, 912]}]
+            )
+        self.sprite_bullet_02_fly = SpriteImage(
+                file_name = "bullet.json",
+                name = "bullet_02_fly",
+                background=[0, 0], 
+                time = 1,
+                is_reverse = True,
+                position = [{'start': [671, 864], 'end': [719, 912]}]
+            )
+        self.sprite_bullet_02_explode = SpriteImage(
+                file_name = "bullet.json",
+                name = "bullet_02_explode",
+                background=[0, 0], 
+                time = 0.2,
+                is_reverse = True,
+                position = [{'start': [720, 864], 'end': [767, 912]}, {'start': [767, 864], 'end': [816, 912]}, {'start': [720, 864], 'end': [767, 912]}]
             )
 
 RES_BULLET = __BULLET()

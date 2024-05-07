@@ -15,6 +15,7 @@ class SpriteImage:
         self.is_reverse = is_reverse
         self.position = position
         self.images = []
+        self.is_repeat = False
         self.__load()
     
     def __load(self):
@@ -32,6 +33,7 @@ class SpriteImage:
             self.images:list[pygame.Surface] = []
             self.time = int(sprite["time"]*1000)
             self.is_reverse=sprite["is_reverse"]
+            self.is_repeat = sprite.get("is_repeat",True)
             image = pygame.image.load(data["path"])
             for item in sprite["position"]:
                 start = item["start"]
@@ -40,6 +42,7 @@ class SpriteImage:
                 x, y = start[0], start[1]
                 cropped_image = pygame.Surface((width, height))
                 cropped_image.blit(image, (0, 0), (x, y, width, height))
+                cropped_image = pygame.transform.rotate(surface=cropped_image,angle=sprite.get('angle') or 0)
                 cropped_image.convert()
                 cropped_image.set_colorkey(image.get_at(sprite["background"]))
                 self.images.append(cropped_image)

@@ -2,6 +2,7 @@ import math
 import random
 import time
 import pygame
+from gameobj.fonts import FREESANSBOLD_20
 from resource.resource import *
 from gameobj.sprite import Sprite
 from gameobj.screen import SCREEM
@@ -26,6 +27,7 @@ class BaseGameObject:
         self.y = y
         self.animations = {}
         self.state = None
+        self.state_table = {}
         self.last_time = 0
         self.time_diff = 0
         self.animation_angle = 0
@@ -42,10 +44,28 @@ class BaseGameObject:
         self.effects = []
         self._is_destroyed = False
         self.load_sprite()  
-
-
+        self._is_destroying = False
+        self.change_state_time = 0
+        self.can_be_attacked = True
     def get_dame(self)->float:
         return self.dame
+    
+    def change_animation(self,state:str):
+        if self.animations.get(state) is None:
+            return
+        self.state = state
+        self.animations.get(state).reset()
+
+    def find_angle(self,taget:list[int]):
+        p1 = [self.x,0]
+        p2 = [self.x,self.y]
+        p3 = taget
+        v1 = (p1[0] - p2[0], p1[1] - p2[1])
+        v2 = (p3[0] - p2[0], p3[1] - p2[1])
+        angle_rad = math.atan2(v1[1], v1[0]) - math.atan2(v2[1], v2[0])
+        angle_deg = math.degrees(angle_rad)
+
+        return angle_deg
     
     def attacked(self,dame:float):
         self.hp-=dame+self.armor
@@ -56,6 +76,8 @@ class BaseGameObject:
     
     @staticmethod
     def collision(object_1,object_2)->bool:
+        if object_1._is_destroying or object_1._is_destroyed or object_2._is_destroying or object_2._is_destroyed:
+            return False
         rect1 = [object_1.x,object_1.y,object_1.x+object_1.width,object_1.y+object_1.height]
         rect2 = [object_2.x,object_2.y,object_2.x+object_2.width,object_2.y+object_2.height]
         if rect1[0] > rect2[2] or rect2[0] > rect1[2]:
@@ -81,6 +103,9 @@ class BaseGameObject:
             self.last_time = time.time()
         self.time_diff = time.time()-self.last_time         
         self._update(contex)
+        if self.animations[self.state].is_done:
+            self.state = self.state_table[self.state]
+        
         self.last_time = time.time()
     
     def _update(self,contex:dict):
@@ -92,14 +117,15 @@ class BaseGameObject:
         if animation is None:
             return
         animation.render(screen=screen,x = self.x,y=self.y,width=self.width,height=self.height,d=self.animation_angle)    
-        font = pygame.font.Font('freesansbold.ttf', 20)
         green = (0, 255, 0)
-        text = font.render(f'HP: {self.hp}', True, green, None)
+        text = FREESANSBOLD_20.render(f'HP: {self.hp}', True, green, None)
         textRect = text.get_rect()
         textRect.center = (self.x, self.y )
         screen.blit(text, textRect)
         pygame.draw.rect(surface=screen,color=green,rect=[self.x,self.y,self.width,self.height],width=1)
 
+    def destroy(self):
+        pass
 class Effect:
     def __init__(self,producer:BaseGameObject) -> None:
         self.producer:BaseGameObject = producer
@@ -114,77 +140,26 @@ class BaseDameEffect(Effect):
 
 class DestroyedBulletEffect(Effect):
     def do_effect(self, taget: BaseGameObject):
-        self.producer._is_destroyed = True
-
-class Bullet(BaseGameObject):
-    
-    def __init__(self,producer:BaseGameObject,*args,**kwargs) -> None:
-        super().__init__(*args,**kwargs)
-
-        self.is_stoped = False
-        self.vector_AB = (self.x_taget-self.x, self.y_taget-self.y)
-        self.length_AB = math.sqrt(self.vector_AB[0] ** 2 + self.vector_AB[1] ** 2)
-        self.producer = producer
-        self.effects:list[Effect] = [BaseDameEffect(producer=self), DestroyedBulletEffect(producer=self)]
-        self.cache_obj:list[BaseGameObject] = []
-
-    def load_sprite(self):
-        state = "normal"
-        sprite = Sprite(RES_BULLET.sprite_bullet_01)
-        self.animations[state] = sprite
-        self.state = state
+        self.producer.destroy()
 
 
-    def _update(self,contex:dict):
-        if self.is_stoped:
-            return
-        
-        for obj in self.all_obj(contex=contex):
-            obj:BaseGameObject = obj
-            if obj == self.producer or obj == self:
-                continue
-            if BaseGameObject.collision(object_1=obj,object_2=self):
-                if obj not in self.cache_obj:
-                    self.cache_obj.append(obj)
-                    for effect in self.effects:
-                        effect.do_effect(taget=obj)
-            elif obj in self.cache_obj:
-                self.cache_obj.remove(obj)
-                
-
-        s = self.speed*self.time_diff
-        k = s/self.length_AB
-        self.x = self.x+self.vector_AB[0]*k
-        self.y = self.y+self.vector_AB[1]*k
-
-
-
-    @property    
-    def is_destroyed(self)->bool:
-        if self._is_destroyed:
-            return True
-        if self.x>SCREEM.get_width() or self.x<=-100 or self.y>SCREEM.get_height() or self.y<=-100:
-            return True
-        return False
-    
+class ThroughBulletEffect(Effect):
+    def do_effect(self, taget: BaseGameObject):
+        self.producer.change_animation(state="destroying_before_through")
 class CharBase(BaseGameObject):
 
-    def find_angle(self,taget:list[int]):
-        p1 = [self.x,0]
-        p2 = [self.x,self.y]
-        p3 = taget
-        v1 = (p1[0] - p2[0], p1[1] - p2[1])
-        v2 = (p3[0] - p2[0], p3[1] - p2[1])
-        angle_rad = math.atan2(v1[1], v1[0]) - math.atan2(v2[1], v2[0])
-        angle_deg = math.degrees(angle_rad)
-
-        return angle_deg
+    
     
     @property
     def is_destroyed(self):
         if self.hp<=0:
             return True
-        self._is_destroyed = True
+        
+        if self._is_destroyed:
+            return True
+        if self.x>SCREEM.get_width()+300 or self.x<=-300 or self.y>SCREEM.get_height()+300 or self.y<=-300:
+            return True
+        return False
 
 class Char001(CharBase):
 
@@ -203,7 +178,24 @@ class Char001(CharBase):
                 break
     
 
+class CharEmpty(CharBase):
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.can_be_attacked=False
+
+    def load_sprite(self):
+        state = "normal"
+        sprite = Sprite(RES_HERO.sprite_hero_01)
+        self.animations[state] = sprite
+        self.state = state
+        
+
+    
+    def _update(self, contex:dict):
+        pass
+    def render(self, screen: pygame.Surface):
+        pygame.draw.rect(screen,[200,0,0],[self.x,self.y,self.width,self.height],width=1)
 
 class Mob001(CharBase):
 
@@ -255,6 +247,16 @@ class Mob001(CharBase):
 
         self.x += new_x
         self.y += new_y
+        for obj in self.all_obj(contex=contex):
+            obj:BaseGameObject = obj
+            if obj == self:
+                continue
+            if BaseGameObject.collision(object_1=obj,object_2=self):
+                self.x-=new_x
+                self.y-=new_y
+                break
+                
+
 
 
 
